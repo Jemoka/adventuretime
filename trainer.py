@@ -94,6 +94,11 @@ class Trainer:
 
             self.epoch()
 
+        self.finish()
+
+    def finish(self):
+        self.accelerator.end_training()
+
     def val(self):
         with torch.inference_mode():
             # <<<<<<< do some validation <<<<<<<
@@ -122,14 +127,16 @@ class Trainer:
             # (we do this because global_step_counter_
             #  is useful not as the # of steps but how
             #  many we need to skip for warm start)
-            self.accelerator.log(train_metrics, step=self.global_step_counter_)
+            if indx % self.args.report_interval == 0 and indx != 0:
+                self.accelerator.log(train_metrics, step=self.global_step_counter_)
+                logger.info("TRAIN | {}/{} | loss {}", self.global_step_counter_,
+                            self.total_batches*self.args.epochs, loss)
             self.global_step_counter_ += 1
 
             logger.debug("STEP | {}", train_metrics)
 
             # save a checkpoint, if needed
             if indx % self.args.checkpoint_interval == 0 and indx != 0:
-                logger.info("TRAIN | {} | loss {}", self.global_step_counter_, loss)
                 self.save(self.save_dir)
             # perform validation and save a checkpoint, if needed
             if indx % self.args.validation_interval == 0 and indx != 0:
