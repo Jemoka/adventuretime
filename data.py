@@ -22,6 +22,8 @@ import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import SequentialLR, LinearLR
 
+from torch.utils.data import DataLoader, Dataset
+
 # huggingface
 from transformers import AutoConfig, AutoModel, AutoTokenizer
 
