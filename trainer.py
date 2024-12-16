@@ -133,7 +133,7 @@ class Trainer:
                             self.total_batches*self.args.epochs, loss)
             self.global_step_counter_ += 1
 
-            logger.debug("STEP | {}", train_metrics)
+            logger.debug("STEP | {} | {}", indx, train_metrics)
 
             # save a checkpoint, if needed
             if indx % self.args.checkpoint_interval == 0 and indx != 0:
@@ -187,6 +187,7 @@ class Trainer:
                                                                     self.global_step_counter_ % self.total_batches)
 
     def save(self, path):
+        logger.debug("CHECKPOINT | saving checkpoint at {}", path)
         self.accelerator.save_state(path)
         with open(os.path.join(path, "config.json"), 'w') as df:
             json.dump({
