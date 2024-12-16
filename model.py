@@ -32,6 +32,8 @@ from accelerate import Accelerator
 from loguru import logger
 
 class Model(nn.Module):
+    # <<<<<<< you probably want a model <<<<<<<
+    # >>>>>>> you probably want a model >>>>>>>
     raise NotImplementedError()
 
 
