@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 
+import torch
 import random
 import numpy as np
 import inspect

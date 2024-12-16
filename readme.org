@@ -6,7 +6,7 @@ This repository is a collection of scripts for the purposes of reproducibly impl
 To run experiments:
 
 #+begin_src python
-python scripts/main.py --help
+python main.py --help
 #+end_src
 
 To get started on editing, fill in all parts that...
