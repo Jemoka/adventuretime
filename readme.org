@@ -1,0 +1,40 @@
+* it's adventuretime!
+This repository is a collection of scripts for the purposes of reproducibly implementing a machine learning run while reducing Jack's usual laziness in terms of logging, saving checkpoints, reproducible validation in the loop, etc.
+
+** usage
+
+To run experiments:
+
+#+begin_src python
+python scripts/main.py --help
+#+end_src
+
+To get started on editing, fill in all parts that...
+
+#+begin_src python
+grep -re ">>>>>>>"
+#+end_src
+
+And, everywhere the project name is needed, I've left:
+
+#+begin_src python
+grep -re "adventure"
+#+end_src
+
+** high level ideas
+1. make stuff flat, because conversational development is a good way to do ML and it isn't conducive to well-organized packages
+2. have scripts that can be SLURMed (i.e. Bash loops should be a sane way to do sweeps)
+3. don't use boilerplate =Trainer= classes (and instead, make your own!)
+
+** on that last thing
+=Trainer= are good, because its easy. Most of the time, though, you want to faff around on the inside on how specific things are done. So, instead of using a =Trainer=, you should just write your own training loop and wrap it in a =Trainer= function.
+
+This package has the boilerplate done so you can just focus writing the =Trainer= (which, for the most part, is your primary job in filling in this boilerplate). This package handles things like
+
+- logging
+- checkpointing models with eval-in-the-loop
+- preemption prevention and random state saving
+
+
+   
+
