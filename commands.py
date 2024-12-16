@@ -15,6 +15,12 @@ def execute(args):
     else:
         trainer = Trainer(args)
 
+    # <<<<<<< do something with trainer <<<<<<<
+    #
+    # trainer.train()
+    #
+    # >>>>>>> do something with trainer >>>>>>>
+
     raise NotImplementedError("ideally, this does something")
 
 def configure(experiment, **kwargs):

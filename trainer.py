@@ -86,6 +86,14 @@ class Trainer:
         if self.accelerator.is_main_process:
             wandb.watch(self.model)
 
+    def train(self):
+        for eid in range(self.args.epochs):
+            if self.global_step_counter_ >= ((eid+1)*self.total_batches):
+                logger.debug("SKIPPING EPOCH {} due to global step count...", eid)
+                continue
+
+            self.epoch()
+
     def val(self):
         with torch.inference_mode():
             # <<<<<<< do some validation <<<<<<<
