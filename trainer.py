@@ -122,6 +122,7 @@ class Trainer:
 
             # take a step
             loss, train_metrics = self.step(i)
+            train_metrics["train/lr"] = self.optim.param_groups[0]["lr"]
 
             # perform logging, and then increment
             # (we do this because global_step_counter_
@@ -171,7 +172,7 @@ class Trainer:
         # <<<<<<< prepare metrics <<<<<<<
         # 
         # loss = self.gather(loss).cpu().item() 
-        # metrics = { "train/metric": ... }
+        # metrics = { "train/loss": ... }
         #
         # >>>>>>> prepare metrics >>>>>>>
 
