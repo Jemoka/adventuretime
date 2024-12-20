@@ -225,6 +225,6 @@ class Trainer:
         if isinstance(result, list):
             return sum(result)/len(result)
         else:
-            return result
+            return result.mean()
     
 
