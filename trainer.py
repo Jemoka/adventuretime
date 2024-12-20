@@ -161,6 +161,11 @@ class Trainer:
 
         self.accelerator.backward(loss)
         self.optim.step()
+        # >>>>>>> scheduler shenanigans >>>>>>>
+        # 
+        # self.scheduler.step()
+        # 
+        # >>>>>>> scheduler shenanigans >>>>>>>
         self.optim.zero_grad()
 
         # <<<<<<< prepare metrics <<<<<<<
