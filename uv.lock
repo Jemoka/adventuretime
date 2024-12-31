@@ -31,6 +31,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "accelerate" },
+    { name = "click" },
     { name = "datasets" },
     { name = "huggingface-hub" },
     { name = "ipdb" },
@@ -50,6 +51,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = ">=1.1.1" },
+    { name = "click", specifier = ">=8.1.7" },
     { name = "datasets", specifier = ">=3.1.0" },
     { name = "huggingface-hub", specifier = ">=0.26.2" },
     { name = "ipdb", specifier = ">=0.13.13" },
