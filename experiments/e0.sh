@@ -10,5 +10,8 @@
 #SBATCH --partition=jag-standard
 #SBATCH --time=14-0
 
+cd .
+source .venv/bin/activate
+
 python main.py implement_me
 
