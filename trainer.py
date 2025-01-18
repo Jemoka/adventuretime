@@ -38,10 +38,13 @@ from data import *
 R = Random(7)
 
 class Trainer:
-    def __init__(self, args):
+    def __init__(self, args, accelerator=None):
         # set up the trainer
         self.args = args
-        self.accelerator = Accelerator(log_with="wandb")
+        if not accelerator:
+            self.accelerator = Accelerator(log_with="wandb")
+        else:
+            self.accelerator = accelerator
         self.accelerator.init_trackers(
             project_name="adventure", 
             config=vars(args),
@@ -207,12 +210,12 @@ class Trainer:
             }, df)
 
     @classmethod
-    def from_pretrained(cls, path, disable_wandb=True):
+    def from_pretrained(cls, path, disable_wandb=True, accelerator=None):
         with open(os.path.join(path, "config.json"), 'r') as df:
             data = json.load(df)
         args = Namespace(**data.get("config", {}))
         args.wandb = False
-        new = cls(args)
+        new = cls(args, accelerator)
         new.load(path)
 
         if disable_wandb:
