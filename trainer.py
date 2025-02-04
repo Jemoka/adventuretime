@@ -56,7 +56,7 @@ class Trainer:
         save_dir = Path(args.out_dir) / args.experiment
         save_dir.mkdir(parents=True, exist_ok=True)
 
-        self.save_dir = str(save_dir / "checkpoint")
+        self.save_dir = save_dir / "checkpoint"
         self.best_dir = str(save_dir / "best")
 
         # <<<<<<< set up models <<<<<<<
@@ -142,9 +142,8 @@ class Trainer:
             logger.debug("STEP | {} | {}", indx, train_metrics)
 
             # save a checkpoint, if needed
-            if (indx % self.args.checkpoint_interval == 0 and indx != 0 and
-                self.accelerator.is_main_process):
-                self.save(self.save_dir)
+            if (indx % self.args.checkpoint_interval == 0 and indx != 0:
+                self.save(str(self.save_dir / str(self.global_step_counter_)))
             # perform validation and save a checkpoint, if needed
             if indx % self.args.validation_interval == 0 and indx != 0:
                 score, val_metrics = self.val()
@@ -152,8 +151,9 @@ class Trainer:
                 if self.accelerator.is_main_process:
                     logger.info("VAL | {} | score {}", self.global_step_counter_, score)
 
-                if score > self.best_val_score_ and self.accelerator.is_main_process:
-                    logger.info("VAL | BEST SCORE | score {}", score)
+                if score > self.best_val_score_:
+                    if self.accelerator.is_main_process:
+                        logger.info("VAL | BEST SCORE | score {}", score)
                     self.best_val_score_ = score
                     self.save(self.best_dir)
 
