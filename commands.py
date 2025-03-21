@@ -3,9 +3,11 @@ from loguru import logger
 from trainer import Trainer
 from parameters import parser
 
+from pathlib import Path
+
 @logger.catch
 def execute(args):
-    if args.warm_start != None:
+    if args.warm_start and Path(str(args.warm_start)).exists():
         # by default, the from_pretrained function disables
         # whatever wandb settings was there b/c we usually
         # use this to load an existing model, but when we are

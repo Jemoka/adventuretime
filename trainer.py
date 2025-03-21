@@ -221,7 +221,7 @@ class Trainer:
         with open(os.path.join(path, "config.json"), 'r') as df:
             data = json.load(df)
         args = Namespace(**data.get("config", {}))
-        args.wandb = False
+        args.wandb = False if disable_wandb else args.wandb
         new = cls(args, accelerator)
         new.load(path)
 
