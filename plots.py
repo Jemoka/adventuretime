@@ -88,6 +88,7 @@ def plot_chicken(data):
     #       xticklabels='auto',
     #       yticklabels='auto',
     #       ax=ax)
+    # plt.close(fig) # remember to call close against the figure!
     # scores = data  # what to return to the outer layer
     #
     # >>>>>>> set up models >>>>>>>
