@@ -58,11 +58,17 @@ class PlotLoggingHandler(logging.Handler):
 
     def arm(self):
         self.__write_plot = True
-    def plot(self, idx=None):
+    def plot(self, idx=None, override_plot_funcs={}):
         # actually emit the plots
         logs = {}
         for k,v in self.__cached_plots.items():
-            save,log = do_plot(k, v)
+            if override_plot_funcs.get(k):
+                plotted = override_plot_funcs.get(k)(v)
+            else:
+                plotted = do_plot(k, v)
+            if not plotted:
+                continue
+            (save,log) = plotted
             logs[k] = log
             self.__saved_plots[k].append((save,idx))
         self.accelerator.log(logs, step=idx)
@@ -95,13 +101,13 @@ def plot_logger(*args, **kwargs):
                format="{message}")
 
     @contextmanager
-    def emit(idx=None):
+    def emit(idx=None, override_plot_funcs={}):
         handler.arm()
         try:
             yield
         finally:
             # this will actually emit the plots
-            handler.plot(idx)
+            handler.plot(idx,override_plot_funcs)
     def get_plots():
         return handler.plots
 
