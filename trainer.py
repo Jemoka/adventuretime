@@ -34,6 +34,7 @@ from loguru import logger
 # our stuff
 from model import *
 from data import *
+from utils import plot_logger
 
 R = Random(7)
 
@@ -51,6 +52,8 @@ class Trainer:
             init_kwargs={"wandb": {"mode": None if args.wandb else "disabled",
                                    "name": args.experiment}},
         )
+        self.plot, self.get_plots = plot_logger(accelerator=self.accelerator,
+                                                args=self.args)
 
         # ...and the output path
         save_dir = Path(args.out_dir) / args.experiment
@@ -124,8 +127,12 @@ class Trainer:
             # <<<<<<< do some setup <<<<<<<
             # >>>>>>> do some setup >>>>>>>
 
-            # take a step
-            loss, train_metrics = self.step(i)
+            # take a step, optionally with plotting
+            if indx % self.args.plot_interval == 0:
+                with self.plot(self.global_step_counter_):
+                    loss, train_metrics = self.step(i)
+            else:
+                loss, train_metrics = self.step(i)
             train_metrics["train/lr"] = self.optim.param_groups[0]["lr"]
 
             # perform logging, and then increment

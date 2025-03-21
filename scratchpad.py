@@ -14,7 +14,8 @@ logger.add(
     "<magenta>({name}:{line})</magenta> <level>{message}</level>",
     level="DEBUG",
     colorize=True,
-    enqueue=True
+    enqueue=True,
+    filter=lambda x:x["extra"].get("task", "") != "plot"
 )
 
 from trainer import Trainer

@@ -49,7 +49,8 @@ if __name__ == "__main__":
         "<magenta>({name}:{line})</magenta> <level>{message}</level>",
         level=("DEBUG" if args.verbose > 0 else "INFO"),
         colorize=True,
-        enqueue=True
+        enqueue=True,
+        filter=lambda x:x["extra"].get("task", "") != "plot"
     )
 
     execute(args)

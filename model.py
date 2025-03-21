@@ -30,10 +30,16 @@ from accelerate import Accelerator
 
 # logging
 from loguru import logger
+from utils import plot
 
 class Model(nn.Module):
     # <<<<<<< you probably want a model <<<<<<<
+    # plot("rooster/plot_chicken",
+    #       thing_to_plot=torch.tensor(),
+    #       key=self.layer_num)  # <- optional key to plot multiple things per cycle
+    #                            #    such as activations per layer
     # >>>>>>> you probably want a model >>>>>>>
+
     raise NotImplementedError()
 
 
