@@ -68,9 +68,16 @@ class PlotLoggingHandler(logging.Handler):
                 plotted = do_plot(k, v)
             if not plotted:
                 continue
-            (save,log) = plotted
-            logs[k] = log
-            self.__saved_plots[k].append((save,idx))
+            if isinstance(plotted, dict):
+                # we want multiple plots from each plot function
+                for a,b in plotted.items(): 
+                    (save,log) = b
+                    logs[a] = log
+                    self.__saved_plots[a].append((save,idx))
+            else:
+                (save,log) = plotted
+                logs[k] = log
+                self.__saved_plots[k].append((save,idx))
         self.accelerator.log(logs, step=idx)
 
         # flush the cache
