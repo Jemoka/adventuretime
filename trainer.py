@@ -149,7 +149,7 @@ class Trainer:
             logger.debug("STEP | {} | {}", indx, train_metrics)
 
             # save a checkpoint, if needed
-            if (indx % self.args.checkpoint_interval == 0 and indx != 0:
+            if indx % self.args.checkpoint_interval == 0 and indx != 0:
                 self.save(str(self.save_dir / str(self.global_step_counter_)))
             # perform validation and save a checkpoint, if needed
             if indx % self.args.validation_interval == 0 and indx != 0:
