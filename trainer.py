@@ -129,7 +129,7 @@ class Trainer:
 
             # take a step, optionally with plotting
             if indx % self.args.plot_interval == 0:
-                with self.plot(self.global_step_counter_):
+                with self.plot(self.global_step_counter_, debug=(not self.args.wandb)):
                     loss, train_metrics = self.step(i)
             else:
                 loss, train_metrics = self.step(i)
