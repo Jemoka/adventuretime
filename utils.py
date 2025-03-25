@@ -33,6 +33,7 @@ from contextlib import contextmanager
 
 # plot function
 from plots import plot as do_plot
+from collections.abc import Callable
 
 R = Random(7)
 
@@ -62,6 +63,7 @@ class PlotLoggingHandler(logging.Handler):
         # actually emit the plots
         logs = {}
         for k,v in self.__cached_plots.items():
+            v = {i: {b: c() if isinstance(c, Callable) else c for b,c in a.items()} for i,a in v.items()}
             if override_plot_funcs.get(k):
                 plotted = override_plot_funcs.get(k)(v)
             else:
