@@ -89,7 +89,7 @@ class Trainer:
         # weeeeeeeeeeee
         (self.model, self.optim, self.train_dl, self.val_dl) = self.accelerator.prepare(
             self.model, self.optim, self.train_dl, self.val_dl)
-        if self.accelerator.is_main_process:
+        if self.accelerator.is_main_process and args.wandb:
             wandb.watch(self.model)
 
     def _vomit(self):
