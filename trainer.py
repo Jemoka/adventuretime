@@ -92,6 +92,39 @@ class Trainer:
         if self.accelerator.is_main_process:
             wandb.watch(self.model)
 
+    def _vomit(self):
+        """recursively vomit every method and attribute of self into a namespace
+
+        only useful if you are Jack and has a weird Jupyter setup. I apologise
+        for the this abuse of all that's good about Python.
+        """
+
+        from types import SimpleNamespace
+        ns = SimpleNamespace()
+
+        from torch.nn import ModuleList
+        buffer = [(i, self) for i in dir(self) if i[0] != "_"]
+        names = []
+        while len(buffer) > 0:
+            member, head = buffer.pop(-1)
+            attr = getattr(head, member)
+            ns.__dict__[member] = attr
+
+            def include(attr):
+                for j in dir(attr):
+                    if j not in names and j[0] != "_":
+                        buffer.append((j, attr))
+                        names.append(j)
+
+            # some special rules for including things 
+            if isinstance(attr, ModuleList):
+                for component in attr:
+                    include(component)
+            else:
+                include(attr)
+
+        return ns
+
     def train(self):
         for eid in range(self.args.epochs):
             if self.global_step_counter_ >= ((eid+1)*self.total_batches):
