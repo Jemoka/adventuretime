@@ -23,6 +23,7 @@ from torch.optim.lr_scheduler import SequentialLR, LinearLR
 
 # huggingface
 from transformers import AutoConfig, AutoModel, AutoTokenizer
+from transformers import get_cosine_schedule_with_warmup
 
 # MLOps
 import wandb
@@ -39,7 +40,7 @@ from utils import plot_logger
 R = Random(7)
 
 class Trainer:
-    def __init__(self, args, accelerator=None):
+    def __init__(self, args, accelerator=None, run_id=None):
         # set up the trainer
         self.args = args
         if not accelerator:
@@ -53,7 +54,9 @@ class Trainer:
             project_name="adventure", 
             config=vars(args),
             init_kwargs={"wandb": {"mode": None if args.wandb else "disabled",
-                                   "name": args.experiment}},
+                                   "name": args.experiment,
+                                   "resume": "allow",
+                                   "id": run_id}},
         )
         self.plot, self.get_plots = plot_logger(accelerator=self.accelerator,
                                                 args=self.args)
@@ -66,9 +69,7 @@ class Trainer:
         self.best_dir = str(save_dir / "best")
 
         # <<<<<<< set up models <<<<<<<
-        # 
-        # self.model = ...
-        #
+        self.model = GPT(args)
         # >>>>>>> set up models >>>>>>>
 
         # <<<<<<< set up data <<<<<<<
@@ -82,7 +83,12 @@ class Trainer:
         self.train_dl_skipped = None 
 
         # optimizer
-        self.optim = AdamW(self.model.parameters(), lr=args.lr)
+        self.optim = self.model.configure_optimizers(
+            weight_decay=args.weight_decay,
+            learning_rate=args.lr,
+            betas=(args.beta1, args.beta2),
+            device_type="cuda" if torch.cuda.is_available() else "cpu"
+        )
 
         # compute training size + the counter (useful for mid-checkpoint recovery) 
         self.total_batches = len(self.train_dl)
@@ -257,7 +263,8 @@ class Trainer:
             json.dump({
                 "config": vars(self.args),
                 "steps": self.global_step_counter_,
-                "score": self.best_val_score_
+                "score": self.best_val_score_,
+                "wandb": wandb.run.id if self.args.wandb else None
             }, df)
 
     @classmethod
@@ -266,7 +273,7 @@ class Trainer:
             data = json.load(df)
         args = Namespace(**data.get("config", {}))
         args.wandb = False if disable_wandb else args.wandb
-        new = cls(args, accelerator)
+        new = cls(args, accelerator, run_id=data.get("wandb"))
         new.load(path)
 
         if disable_wandb:

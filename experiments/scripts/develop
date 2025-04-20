@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+
+FORCE=''
+BOOTSTRAP_COMMAND='uv sync'
+# <<<<<<< configure local basedir <<<<<<<
+# BASEDIR="/scr/biggest/$(whoami)"
+# >>>>>>> configure local basedir >>>>>>>
+
+if [ -f "./develop.env" ]; then
+    source ./develop.env
+fi
+if [ -f "./.develop.env" ]; then
+    source ./.develop.env
+fi
+
+logo() {
+    cat << "EOF" 
+
+It's time to....
+     __             __        
+ ___/ /__ _  _____ / /__  ___ 
+/ _  / -_) |/ / -_) / _ \/ _ \
+\_,_/\__/|___/\__/_/\___/ .__/
+                       /_/ 
+
+EOF
+run-parts /etc/update-motd.d
+echo
+}
+pushd () {
+    command pushd "$@" > /dev/null
+}
+popd () {
+    command popd "$@" > /dev/null
+}
+
+############### ARGUMENT PARSING ###############
+
+print_usage() {
+    printf "usage: develop [-f]orce [-b]ootstrap_command [-h]elp [-w]orkdir [run_command]\n"
+}
+
+while getopts 'fbhw' flag; do
+  case "${flag}" in
+    f) FORCE="1" ;;
+    w) BASEDIR="$OPTARG" ;;
+    b) BOOTSTRAP_COMMAND="$OPTARG" ;;
+    h) print_usage
+       exit 0 ;;
+    *) print_usage
+       exit 1 ;;
+  esac
+done
+
+shift $(($OPTIND - 1))
+RUN="$*"
+
+if [ ! "$RUN" ] ; then
+    RUN="bash --rcfile <(echo \"source ~/.bashrc;source .venv/bin/activate\")"
+fi
+
+if [ ! "$SLURM_JOB_ID" ] && [ ! "$FORCE" ]; then
+    echo You do not appear to be in a SLURM environment, use -f to force.
+    exit 1
+fi
+
+############### SANITY CHECK ###############
+if [ ! -d "$(dirname "$BASEDIR")" ]; then
+    echo "Parent of workdir, \"$(dirname "$BASEDIR")\", should exist but doesn't."
+    echo "Something is very wrong, you should use -w to set something that"
+    echo "does exist otherwise you will probably have a very bad time (such"
+    echo "as attempting to write into root)."
+    exit 1
+fi
+
+git status >/dev/null 2>&1
+GIT_STATUS_CODE=$?
+
+if [ ! "$GIT_STATUS_CODE" = '0' ]; then
+    echo "You are not in a git repository, we can't make a worktree here!"
+    exit 128
+fi
+
+CHANGED=$(git diff-index --name-only HEAD --)
+if [ "$CHANGED" ]; then
+    echo "You have an unclean git worktree, we are afraid to make another worktree so are giving up."
+    exit 127
+fi
+
+############### WORKDIR MANAGEMENT ###############
+export STARTDIR=$(pwd)
+
+printf "Making basedir... "
+mkdir -p $BASEDIR
+printf "\rMaking basedir... \e[32mdone\e[0m\n"
+
+export WORKDIR="$BASEDIR/$(basename "$PWD")_$(mktemp -u XXXXXXXX)"
+printf "Setting up in \e[32m$WORKDIR\e[0m\n"
+
+printf "Making worktree... "
+git worktree add $WORKDIR HEAD >/dev/null 2>&1
+printf "\rMaking worktree... \e[32mdone\e[0m\n"
+
+# set a trap for cleanup
+cleanup() {
+    SKIP_REMOVE_TREE=""
+    GOT_PATCH=""
+    pushd $WORKDIR
+        if [ "$(git diff HEAD --)" ]; then
+            printf "\nDiff detected, generating patch... "
+            PATCHFILE="$(mktemp -u XXXXXXXX).patch"
+            git diff HEAD -- > "$WORKDIR/$PATCHFILE" 2> /dev/null
+            if [ ! "$?" = "0" ]; then
+                printf "\rDiff detected, generating patch... ERROR\n"
+                printf "We are leaving the worktree in place for safety.\n"
+                SKIP_REMOVE_TREE="1"
+            else
+                cp "$WORKDIR/$PATCHFILE" "$STARTDIR/$PATCHFILE"
+                rm "$WORKDIR/$PATCHFILE"
+                GOT_PATCH="1"
+                printf "\rDiff detected, generating patch... \e[32mdone\e[0m\n"
+            fi
+        else
+            printf "\n"
+        fi
+    popd
+
+    if [ "$GOT_PATCH" ]; then
+        printf "Applying patch... "
+        git apply "$STARTDIR/$PATCHFILE" >/dev/null 2>&1
+        if [ ! "$?" = "0" ]; then
+            printf "\rApplying patch... ERROR\n"
+            printf "We are keeping around ./$PATCHFILE for inspection."
+        else
+            printf "\rApplying patch... \e[32mdone\e[0m\n"
+            rm "$STARTDIR/$PATCHFILE" 
+        fi
+    fi
+    
+    printf "Cleaning up worktree... "
+    if [ ! "$SKIP_REMOVE_TREE" ]; then
+        git worktree remove --force $WORKDIR >/dev/null 2>&1
+    fi
+    printf "\rCleaning up worktree... \e[32mdone\e[0m\n"
+    printf "Bye, hope you had fun!\n\n"
+}
+trap cleanup EXIT
+
+pushd $WORKDIR
+
+printf "Running bootstrap command... \n"
+bash -c "eval $BOOTSTRAP_COMMAND"
+printf "Running bootstrap command... \e[32mdone\e[0m\n"
+printf "Lovely! Ready to rock and roll? \n\n"
+
+logo
+bash -c "$RUN"
+
+popd
+
