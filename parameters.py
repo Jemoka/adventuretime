@@ -20,4 +20,5 @@ parser.add_argument("--out_dir", help="directory to save checkpoints and outputs
 # hyperparameters
 parser.add_argument("--lr", help="learning rate", type=float, default=1e-4)
 parser.add_argument("--epochs", help="number of epochs to train", type=int, default=1)
+parser.add_argument("--accumulate_steps", help="batch size", type=int, default=16)
 
