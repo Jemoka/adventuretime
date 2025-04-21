@@ -34,5 +34,5 @@ parser.add_argument("--n_layer", help="number of layers", type=int, default=12)
 parser.add_argument("--n_head", help="number of attention heads", type=int, default=12)
 parser.add_argument("--n_embd", help="embedding size", type=int, default=768)
 parser.add_argument("--dropout", help="dropout rate", type=float, default=0.0)
-parser.add_argument("--no_bias", help="do not use bias in linear layers", action="store_false", default=True)
+parser.add_argument("--no_bias", help="do not use bias in linear layers", dest="bias", action="store_false", default=True)
 
