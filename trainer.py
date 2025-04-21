@@ -209,7 +209,7 @@ class Trainer:
         # we are done using the skipped DL since we finished the remaining batch
         self.train_dl_skipped = None
 
-    def gradients(self, batch)
+    def gradients(self, batch):
         # <<<<<<< do some work <<<<<<<
         # 
         # loss = self.model(**batch, ...)
