@@ -59,11 +59,15 @@ class PlotLoggingHandler(logging.Handler):
 
     def arm(self):
         self.__write_plot = True
-    def plot(self, idx=None, override_plot_funcs={}):
+    def plot(self, idx=None, override_plot_funcs={}, debug=True):
         # actually emit the plots
         logs = {}
         for k,v in self.__cached_plots.items():
-            v = {i: {b: c() if isinstance(c, Callable) else c for b,c in a.items()} for i,a in v.items()}
+            v = {i: {b: c() if isinstance(c, Callable)
+                     else c for b,c in a.items()}
+                 if isinstance(a, dict)
+                 else a
+                 for i,a in v.items()}
             if override_plot_funcs.get(k):
                 plotted = override_plot_funcs.get(k)(v)
             else:
@@ -75,18 +79,20 @@ class PlotLoggingHandler(logging.Handler):
                 for a,b in plotted.items(): 
                     (save,log) = b
                     logs[a] = log
-                    self.__saved_plots[a].append((save,idx))
+                    if debug:
+                        self.__saved_plots[a].append((save,idx))
             else:
                 (save,log) = plotted
                 logs[k] = log
-                self.__saved_plots[k].append((save,idx))
+                if debug:
+                    self.__saved_plots[k].append((save,idx))
         self.accelerator.log(logs, step=idx)
 
         # flush the cache
         self.__cached_plots = defaultdict(lambda : defaultdict(dict))
         self.__write_plot = False
 
-    def emit(self, record: logging.LogRecord) -> None:
+    def emit(self, record: logging.LogRecord, debug=True) -> None:
         name = record.getMessage()
         kwargs = record.extra["payload"]
         key = record.extra["key"]
@@ -110,13 +116,13 @@ def plot_logger(*args, **kwargs):
                format="{message}")
 
     @contextmanager
-    def emit(idx=None, override_plot_funcs={}):
+    def emit(idx=None, override_plot_funcs={}, debug=True):
         handler.arm()
         try:
             yield
         finally:
             # this will actually emit the plots
-            handler.plot(idx,override_plot_funcs)
+            handler.plot(idx,override_plot_funcs, debug=debug)
     def get_plots():
         return handler.plots
 
