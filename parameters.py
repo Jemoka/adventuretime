@@ -20,6 +20,8 @@ parser.add_argument("--out_dir", help="directory to save checkpoints and outputs
 # hyperparameters
 parser.add_argument("--lr", help="learning rate", type=float, default=1e-4)
 parser.add_argument("--epochs", help="number of epochs to train", type=int, default=1)
+parser.add_argument("--accumulate_steps", help="batch size", type=int, default=16)
+
 ## optimizer configuration
 parser.add_argument("--weight_decay", type=float, default=1e-1, help="AdamW weight decay")
 parser.add_argument("--beta1", type=float, default=0.9, help="AdamW beta1 parameter") 
@@ -32,5 +34,5 @@ parser.add_argument("--n_layer", help="number of layers", type=int, default=12)
 parser.add_argument("--n_head", help="number of attention heads", type=int, default=12)
 parser.add_argument("--n_embd", help="embedding size", type=int, default=768)
 parser.add_argument("--dropout", help="dropout rate", type=float, default=0.0)
-parser.add_argument("--no_bias", help="do not use bias in linear layers", action="store_false", default=True)
+parser.add_argument("--no_bias", help="do not use bias in linear layers", dest="bias", action="store_false", default=True)
 

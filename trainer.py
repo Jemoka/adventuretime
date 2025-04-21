@@ -44,7 +44,10 @@ class Trainer:
         # set up the trainer
         self.args = args
         if not accelerator:
-            self.accelerator = Accelerator(log_with="wandb")
+            self.accelerator = Accelerator(
+                log_with="wandb",
+                gradient_accumulation_steps=self.args.accumulate_steps
+            )
         else:
             self.accelerator = accelerator
         self.accelerator.init_trackers(
@@ -169,9 +172,9 @@ class Trainer:
             # take a step, optionally with plotting
             if indx % self.args.plot_interval == 0:
                 with self.plot(self.global_step_counter_, debug=(not self.args.wandb)):
-                    loss, train_metrics = self.step(i)
+                    loss, train_metrics = self.step(i, indx)
             else:
-                loss, train_metrics = self.step(i)
+                loss, train_metrics = self.step(i, indx)
             train_metrics["train/lr"] = self.optim.param_groups[0]["lr"]
 
             # perform logging, and then increment
@@ -206,21 +209,14 @@ class Trainer:
         # we are done using the skipped DL since we finished the remaining batch
         self.train_dl_skipped = None
 
-    def step(self, batch):
+    def gradients(self, batch):
         # <<<<<<< do some work <<<<<<<
         # 
         # loss = self.model(**batch, ...)
         #
         # >>>>>>> do some work >>>>>>>
 
-        self.accelerator.backward(loss)
-        self.optim.step()
-        # >>>>>>> scheduler shenanigans >>>>>>>
-        # 
-        # self.scheduler.step()
-        # 
-        # >>>>>>> scheduler shenanigans >>>>>>>
-        self.optim.zero_grad()
+        self.accelerator.backward(loss/self.args.accumulate_steps)
 
         # <<<<<<< prepare metrics <<<<<<<
         # 
@@ -230,7 +226,22 @@ class Trainer:
         # >>>>>>> prepare metrics >>>>>>>
 
         return loss, metrics
-        
+
+    def step(self, batch, indx):
+        if indx % self.args.accumulate_steps == 0:
+            loss, metrics = self.gradients(batch)
+            self.optim.step()
+            # >>>>>>> scheduler shenanigans >>>>>>>
+            # 
+            # self.scheduler.step()
+            # 
+            # >>>>>>> scheduler shenanigans >>>>>>>
+            self.optim.zero_grad()
+        else:
+            with self.accelerator.no_sync(self.model):
+                loss, metrics = self.gradients(batch)
+
+        return loss, metrics
 
     def load(self, path):
         self.accelerator.load_state(path)
