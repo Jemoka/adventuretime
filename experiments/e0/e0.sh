@@ -12,5 +12,5 @@
 
 cd .
 
-./experiments/scripts/develop "python main.py implement_me"
+./experiments/scripts/develop "source .venv/bin/activate && python main.py implement_me"
 
