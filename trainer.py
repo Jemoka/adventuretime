@@ -83,12 +83,20 @@ class Trainer:
         self.train_dl_skipped = None 
 
         # optimizer
-        self.optim = self.model.configure_optimizers(
-            weight_decay=args.weight_decay,
-            learning_rate=args.lr,
-            betas=(args.beta1, args.beta2),
-            device_type="cuda" if torch.cuda.is_available() else "cpu"
-        )
+        # <<<<<<< set up optimizer <<<<<<<
+        # self.optim = self.model.configure_optimizers(
+        #     weight_decay=args.weight_decay,
+        #     learning_rate=args.lr,
+        #     betas=(args.beta1, args.beta2),
+        #     device_type="cuda" if torch.cuda.is_available() else "cpu"
+        # )
+        #
+        # OR
+        #
+        # self.optim = AdamW(self.model.parameters(), lr=args.lr,
+        #                    betas=(args.beta1, args.beta2),
+        #                    weight_decay=args.weight_decay)
+        # >>>>>>> set up optimizer >>>>>>>
 
         # compute training size + the counter (useful for mid-checkpoint recovery) 
         self.total_batches = len(self.train_dl)
