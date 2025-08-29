@@ -21,6 +21,7 @@ logger.add(
 from trainer import Trainer
 from commands import configure
 
+args = configure("test")
 
 
 

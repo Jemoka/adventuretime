@@ -7,6 +7,7 @@ parser.add_argument("experiment", help="name for the experiment", type=str)
 parser.add_argument('-v', '--verbose', action='count', default=0, help="log level")
 parser.add_argument("--wandb", default=False, action="store_true", help="whether to use wandb")
 parser.add_argument("--warm_start", default=None, type=str, help="recover trainer from this path")
+parser.add_argument("--local-rank", "--local_rank", default=0, type=int, help="the local rank of this run")
 
 # intervals
 parser.add_argument("--report_interval", default=64, type=int, help="save to wandb every this many steps")

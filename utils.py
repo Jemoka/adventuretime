@@ -21,8 +21,6 @@ import torch.nn.functional as F
 
 # MLOps
 import wandb
-from accelerate import Accelerator, DeepSpeedPlugin
-from accelerate.state import AcceleratorState
 
 # logging
 import logging
@@ -40,7 +38,7 @@ R = Random(7)
 class PlotLoggingHandler(logging.Handler):
     def __init__(self, *args, **kwargs):
         self.args = kwargs.pop("args")
-        self.accelerator = kwargs.pop("accelerator")
+        self.logger = kwargs.pop("logger")
         super().__init__(*args, **kwargs)
 
         # because we will plot() whenever, but only plot
@@ -86,7 +84,7 @@ class PlotLoggingHandler(logging.Handler):
                 logs[k] = log
                 if debug:
                     self.__saved_plots[k].append((save,idx))
-        self.accelerator.log(logs, step=idx)
+        self.logger(logs, step=idx)
 
         # flush the cache
         self.__cached_plots = defaultdict(lambda : defaultdict(dict))

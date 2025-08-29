@@ -29,7 +29,6 @@ from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 # MLOps
 import wandb
-from accelerate import Accelerator
 
 # logging
 from loguru import logger
